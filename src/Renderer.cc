@@ -4,12 +4,16 @@
 #include <ctime>    // time()
 #include <iostream>
 
+#include "algorithm/Utils.hpp"
+
 using namespace kf;
 
-void randomizePoints(std::vector<Point>& points, unsigned size);
-
 Renderer::Renderer() {
+    /** Setup the rendering environment */
     setup();
+
+    /** Set running flag */
+    isRunning = true;
 
     while (window.isOpen()) {
         /** Event handling */
@@ -44,10 +48,13 @@ void Renderer::setup() {
                   sf::Style::Titlebar | sf::Style::Close);
 
     window.setFramerateLimit(60);
-    window.setVerticalSyncEnabled(true);
     window.setKeyRepeatEnabled(false);
 
-    randomizePoints(points, 16);
+    /** Generate random seed */
+    srand(time(NULL));
+
+    /** Initialize the points */
+    Utils::randomizePoints(points, 16, window.getSize());
 }
 
 void Renderer::render() {
@@ -66,24 +73,11 @@ void Renderer::onClose() {
 void Renderer::onKeyPressed(sf::Keyboard::Key pressedKey) {
     switch (pressedKey) {
         case sf::Keyboard::Key::Escape: onClose(); break;
-        case sf::Keyboard::Key::R: randomizePoints(points, 16); break;
+        case sf::Keyboard::Key::R: {
+            Utils::randomizePoints(points, 16, window.getSize());
+        }; break;
         default: {
             std::cout << "KeyPressed: " << pressedKey << std::endl;
         }; break;
-    }
-}
-
-void randomizePoints(std::vector<Point>& points, unsigned size) {
-    if (!points.empty()) {
-        points.clear();
-    }
-
-    /** Randomly generate points */
-    srand(time(NULL));
-    for (unsigned i = 0; i < 16; ++i) {
-        int16_t x = rand() % (512 - 64) + 64;
-        int16_t y = rand() % (512 - 64) + 64;
-
-        points.emplace_back(x, y);
     }
 }

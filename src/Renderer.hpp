@@ -14,7 +14,7 @@ private:
      * Check whether the application is running still or
      * flagged to stop.
      */
-    bool isRunning = true;
+    bool isRunning = false;
 
     /**
      * SFML Window that would render the frames.
