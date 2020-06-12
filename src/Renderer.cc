@@ -3,12 +3,14 @@
 #include <cstdlib>    // rand(), srand
 #include <ctime>    // time()
 #include <iostream>
+#include <string>
 
 #include "algorithm/Utils.hpp"
 
 using namespace kf;
 
-Renderer::Renderer() {
+Renderer::Renderer(unsigned _size)
+    : pointsSize(_size) {
     /** Setup the rendering environment */
     setup();
 
@@ -27,6 +29,11 @@ Renderer::Renderer() {
                 case sf::Event::EventType::KeyPressed: {
                     onKeyPressed(ev.key.code);
                 }; break;
+
+                    // case sf::Event::EventType::MouseMoved: {
+                    //     std::cout << "Mouse @{" << ev.mouseMove.x << ", "
+                    //               << ev.mouseMove.y << "}" << std::endl;
+                    // }; break;
             }
         }
 
@@ -35,7 +42,7 @@ Renderer::Renderer() {
         }
 
         /** Render the screen */
-        window.clear(sf::Color(0xFA, 0xFA, 0xFA));
+        window.clear(sf::Color(0x12, 0x12, 0x12));
         render();
         window.display();
     }
@@ -50,31 +57,67 @@ void Renderer::setup() {
     window.setFramerateLimit(60);
     window.setKeyRepeatEnabled(false);
 
+    /** Load font */
+    if (!font.loadFromFile("res/montserrat.ttf")) {
+        std::cout << "Could not find the font file!" << std::endl;
+    }
+
     /** Generate random seed */
     srand(time(NULL));
 
     /** Initialize the points */
-    Utils::randomizePoints(points, 16, window.getSize());
+    Utils::randomizePoints(points, pointsSize, window.getSize());
+
+    /** Instantiate the algorithm */
+    std::cout << "Before: {" << points[0].x << ", " << points[0].y << "}"
+              << std::endl;
+    algorithm = new GrahamScan(points);
+    std::cout << "After: {" << points[0].x << ", " << points[0].y << "}"
+              << std::endl;
 }
 
 void Renderer::render() {
-    for (auto& p : points) {
+    /** Draw all points and point's index first */
+    for (unsigned i = 0; i < points.size(); ++i) {
+        Point& p = points[i];
+
+        /** Circle */
         sf::CircleShape c(4.0f);
-        c.setFillColor(sf::Color(0xFF, 0x00, 0x00));
         c.setPosition((float) p.x, (float) p.y);
+        const sf::Color& circleColor =
+           i == 0 ? sf::Color(0x00, 0xFF, 0x00) : sf::Color(0xFF, 0x00, 0x00);
+        c.setFillColor(circleColor);
         window.draw(c);
+
+        /** Index */
+        sf::Text t(std::to_string(i), font, 16);
+        t.setPosition((float) p.x, (float) p.y + 7.5f);
+        window.draw(t);
+
+        /** Lines */
+        if (i != 0) {
+            sf::Vertex lines[] = {
+               sf::Vertex(sf::Vector2f((float) algorithm->getStartPoint().x,
+                                       (float) algorithm->getStartPoint().y)),
+               sf::Vertex(c.getPosition())};
+
+            window.draw(lines, 2, sf::Lines);
+        }
     }
 }
 
 void Renderer::onClose() {
     isRunning = false;
+    delete algorithm;
 }
 
 void Renderer::onKeyPressed(sf::Keyboard::Key pressedKey) {
     switch (pressedKey) {
         case sf::Keyboard::Key::Escape: onClose(); break;
         case sf::Keyboard::Key::R: {
-            Utils::randomizePoints(points, 16, window.getSize());
+            std::cout << "Updating points..." << std::endl;
+            Utils::randomizePoints(points, pointsSize, window.getSize());
+            algorithm->updateStartPoint();
         }; break;
         default: {
             std::cout << "KeyPressed: " << pressedKey << std::endl;

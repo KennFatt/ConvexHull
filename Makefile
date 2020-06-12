@@ -10,7 +10,7 @@ COMPILE_DIRS = out/objects
 # Executable dirs
 EXECUTABLE_DIRS = out
 
-all: main.o Renderer.o
+all: main.o Renderer.o GrahamScan.o
 	${CC} ${COMPILE_DIRS}/*.o -o ${EXECUTABLE_DIRS}/convexhull.out ${CLIBS}
 
 clean:
@@ -20,4 +20,7 @@ main.o: main.cc
 	${CC} ${CFLAGS} -c $< -o ${COMPILE_DIRS}/$@
 
 Renderer.o: src/Renderer.cc
+	${CC} ${CFLAGS} -c $< -o ${COMPILE_DIRS}/$@
+
+GrahamScan.o: src/algorithm/GrahamScan.cc
 	${CC} ${CFLAGS} -c $< -o ${COMPILE_DIRS}/$@

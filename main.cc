@@ -1,5 +1,5 @@
 #include "src/Renderer.hpp"
 
 int main() {
-    kf::Renderer();
+    kf::Renderer(16);
 }

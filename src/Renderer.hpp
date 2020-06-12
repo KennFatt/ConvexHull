@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 
+#include "algorithm/GrahamScan.hpp"
 #include "algorithm/Point.hpp"
 
 namespace kf {
@@ -11,10 +12,22 @@ namespace kf {
 class Renderer {
 private:
     /**
+     * Amount of points that will be rendered in the canvas.
+     *
+     * @see Renderer::points
+     */
+    unsigned pointsSize;
+
+    /**
      * Check whether the application is running still or
      * flagged to stop.
      */
     bool isRunning = false;
+
+    /**
+     * SFML main font.
+     */
+    sf::Font font;
 
     /**
      * SFML Window that would render the frames.
@@ -25,6 +38,11 @@ private:
      * Randomly distributed points.
      */
     std::vector<Point> points;
+
+    /**
+     * Algorithm backend.
+     */
+    GrahamScan* algorithm;
 
     /**
      * Setup all the things before start to rendering the canvas.
@@ -52,7 +70,7 @@ public:
      * 1. Renderer::setup()
      * 2. Loop Renderer::render();
      */
-    Renderer();
+    Renderer(unsigned pointsSize = 5);
 
     /**
      * Copy constructor is not allowed for this class.
