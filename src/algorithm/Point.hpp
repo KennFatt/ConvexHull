@@ -5,9 +5,13 @@
 
 namespace kf {
 
-class Point {
+struct Point {
     int16_t x;
     int16_t y;
+
+    Point(int16_t _x, int16_t _y)
+        : x(_x)
+        , y(_y) {}
 };
 
 }    // namespace kf

@@ -2,17 +2,29 @@
 #define __KF_RENDERER_H
 
 #include <SFML/Graphics.hpp>
+#include <vector>
+
+#include "algorithm/Point.hpp"
 
 namespace kf {
 
 class Renderer {
 private:
+    /**
+     * Check whether the application is running still or
+     * flagged to stop.
+     */
     bool isRunning = true;
 
     /**
      * SFML Window that would render the frames.
      */
     sf::RenderWindow window;
+
+    /**
+     * Randomly distributed points.
+     */
+    std::vector<Point> points;
 
     /**
      * Setup all the things before start to rendering the canvas.
