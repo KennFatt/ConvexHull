@@ -58,7 +58,7 @@ public:
     /**
      * Constructor will call GrahamScan::refreshPoints() to organize the points.
      */
-    GrahamScan(std::vector<Point> &_points, const unsigned _pointsSize, unsigned _canvasWidth = 0, unsigned _canvasHeight = 0);
+    explicit GrahamScan(std::vector<Point> &_points, const unsigned _pointsSize, unsigned _canvasWidth = 0, unsigned _canvasHeight = 0);
 
     /** Disable copy constructor */
     GrahamScan(const GrahamScan &) = delete;
