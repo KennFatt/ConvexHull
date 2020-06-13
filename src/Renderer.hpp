@@ -64,6 +64,12 @@ private:
      */
     void onKeyPressed(sf::Keyboard::Key);
 
+    /**
+     * Polling windows event in separated function,
+     * but it's still in the same main thread.
+     */
+    void handleEvent();
+
 public:
     /**
      * Renderer flow:

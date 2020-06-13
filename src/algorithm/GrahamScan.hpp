@@ -30,6 +30,15 @@ private:
      */
     Point &findStartPoint();
 
+    /**
+     * Sort all points based on their polar angle related to start point.
+     *
+     * The sorting mechanism:
+     * 1. Find point with counter-clockwise orientation from the start point.
+     * 2. If the orientation is co-linear, then let the furthest comes first.
+     *
+     * Sorting algorithm: quicksort O(N log N)
+     */
     void sortPolarAnglePoitns();
 
 public:
@@ -37,8 +46,14 @@ public:
 
     GrahamScan(const GrahamScan &) = delete;
 
+    /**
+     * Get the start point.
+     */
     Point &getStartPoint();
 
+    /**
+     * Update its start point due the points also changed.
+     */
     void updateStartPoint();
 };
 

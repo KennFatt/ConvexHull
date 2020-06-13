@@ -19,23 +19,7 @@ Renderer::Renderer(unsigned _size)
 
     while (window.isOpen()) {
         /** Event handling */
-        sf::Event ev;
-        while (window.pollEvent(ev)) {
-            switch (ev.type) {
-                case sf::Event::EventType::Closed: {
-                    onClose();
-                }; break;
-
-                case sf::Event::EventType::KeyPressed: {
-                    onKeyPressed(ev.key.code);
-                }; break;
-
-                    // case sf::Event::EventType::MouseMoved: {
-                    //     std::cout << "Mouse @{" << ev.mouseMove.x << ", "
-                    //               << ev.mouseMove.y << "}" << std::endl;
-                    // }; break;
-            }
-        }
+        handleEvent();
 
         if (!isRunning) {
             window.close();
@@ -50,9 +34,14 @@ Renderer::Renderer(unsigned _size)
 
 void Renderer::setup() {
     /** SFML window setup */
+    sf::ContextSettings settings;
+
+    /** Anti-aliasnig x8 */
+    settings.antialiasingLevel = 8;
+
     window.create(sf::VideoMode(512, 512),
                   "Convex Hull - Graham Scan algorithm",
-                  sf::Style::Titlebar | sf::Style::Close);
+                  sf::Style::Titlebar | sf::Style::Close, settings);
 
     window.setFramerateLimit(60);
     window.setKeyRepeatEnabled(false);
@@ -65,7 +54,11 @@ void Renderer::setup() {
     /** Generate random seed */
     srand(time(NULL));
 
-    /** Initialize the points */
+    /**
+     * Initialize the points.
+     *
+     * TODO: Move it inside algorithm things.
+     */
     Utils::randomizePoints(points, pointsSize, window.getSize());
 
     /** Instantiate the algorithm */
@@ -100,8 +93,25 @@ void Renderer::render() {
                sf::Vertex(sf::Vector2f((float) algorithm->getStartPoint().x,
                                        (float) algorithm->getStartPoint().y)),
                sf::Vertex(c.getPosition())};
-
             window.draw(lines, 2, sf::Lines);
+        }
+    }
+}
+
+void Renderer::handleEvent() {
+    sf::Event ev;
+    while (window.pollEvent(ev)) {
+        switch (ev.type) {
+            case sf::Event::EventType::Closed: onClose(); break;
+
+            case sf::Event::EventType::KeyPressed:
+                onKeyPressed(ev.key.code);
+                break;
+
+                // case sf::Event::EventType::MouseMoved: {
+                //     std::cout << "Mouse @{" << ev.mouseMove.x << ", "
+                //               << ev.mouseMove.y << "}" << std::endl;
+                // }; break;
         }
     }
 }
