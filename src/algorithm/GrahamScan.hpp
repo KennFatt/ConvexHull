@@ -10,9 +10,22 @@ namespace kf {
 class GrahamScan {
 private:
     /**
+     * Pointer to the starting point.
+     * It'd be nullptr if not initialized yet.
+     */
+    static Point *startPoint;
+
+    /**
      * Initial size for GrahamScan::points.
      */
-    unsigned pointsSize;
+    const unsigned pointsSize;
+
+    /**
+     * This is optional, but if we implement with multimedia library like SDL or
+     * SFML, the value should be the width and height of the viewport.
+     */
+    const unsigned canvasWidth;
+    const unsigned canvasHeight;
 
     /**
      * All loaded points inside the canvas.
@@ -20,21 +33,9 @@ private:
     std::vector<Point> &points;
 
     /**
-     * This is optional, but if we implement with multimedia library like SDL or
-     * SFML, the value should be the width and height of the viewport.
-     */
-    unsigned canvasWidth;
-    unsigned canvasHeight;
-
-    /**
      * Stack of valid hull.
      */
     std::vector<Point> hull;
-
-    /**
-     * Most bottom (and most left) point.
-     */
-    // Point *startPoint;
 
     /**
      * Find starting point.
@@ -53,14 +54,19 @@ private:
     void sortPolarAnglePoints();
 
 public:
-    static Point *startPoint;
 
     /**
      * Constructor will call GrahamScan::refreshPoints() to organize the points.
      */
-    GrahamScan(std::vector<Point> &_points, unsigned _pointsSize,
-               unsigned _canvasWidth = 0, unsigned _canvasHeight = 0);
+    GrahamScan(std::vector<Point> &_points, const unsigned _pointsSize, unsigned _canvasWidth = 0, unsigned _canvasHeight = 0);
+
+    /** Disable copy constructor */
     GrahamScan(const GrahamScan &) = delete;
+
+    /**
+     * Get pointer to the current starting point.
+     */
+    static Point *getStartingPoint();
 
     /**
      * Get points reference.
@@ -71,11 +77,6 @@ public:
      * Get final known hull.
      */
     std::vector<Point> &getHull();
-
-    // /**
-    //  * Get the start point.
-    //  */
-    // Point *getStartPoint();
 
     /**
      * Re-organize the points.

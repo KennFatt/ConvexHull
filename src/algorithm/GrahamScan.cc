@@ -1,8 +1,8 @@
 #include "GrahamScan.hpp"
 
-#include <cstdlib>    // qsort
+#include <cstdlib>    // qsort()
 #include <iostream>
-#include <utility>    // std::swap
+#include <utility>    // swap()
 
 #include "Utils.hpp"
 
@@ -15,24 +15,33 @@ Point *GrahamScan::startPoint = nullptr;
 
 // --------------------- PUBLIC ---------------------
 
-GrahamScan::GrahamScan(std::vector<Point> &_points, unsigned _pointsSize,
-                       unsigned _canvasWidth, unsigned _canvasHeight)
+GrahamScan::GrahamScan(std::vector<Point> &_points, const unsigned _pointsSize, const unsigned _canvasWidth, const unsigned _canvasHeight)
     : pointsSize(_pointsSize)
-    , points(_points)
     , canvasWidth(_canvasWidth)
-    , canvasHeight(_canvasHeight) {
+    , canvasHeight(_canvasHeight)
+    , points(_points)
+{
+    /** Call this function immediately for the first time ever */
     refreshPoints();
 }
 
-std::vector<Point> &GrahamScan::getPoints() {
+Point *GrahamScan::getStartingPoint()
+{
+    return startPoint;
+}
+
+std::vector<Point> &GrahamScan::getPoints()
+{
     return points;
 }
 
-std::vector<Point> &GrahamScan::getHull() {
+std::vector<Point> &GrahamScan::getHull()
+{
     return hull;
 }
 
-void GrahamScan::refreshPoints() {
+void GrahamScan::refreshPoints()
+{
     /** Generate random points */
     Utils::randomizePoints(points, pointsSize, canvasWidth, canvasHeight);
 
@@ -52,9 +61,7 @@ void GrahamScan::refreshPoints() {
     hull.push_back(points[1]);
 
     for (unsigned i = 2; i < points.size(); ++i) {
-        while (Utils::orientation(hull[hull.size() - 2], hull[hull.size() - 1],
-                                  points[i])
-               != 2) {
+        while (Utils::orientation(hull[hull.size() - 2], hull[hull.size() - 1], points[i]) != 2) {
             hull.pop_back();
         }
 
@@ -69,7 +76,8 @@ void GrahamScan::refreshPoints() {
 
 // --------------------- PRIVATE ---------------------
 
-void GrahamScan::findStartPoint() {
+void GrahamScan::findStartPoint()
+{
     unsigned tmpIndex = 0;
     Point tmp = points.at(tmpIndex);
 
@@ -97,47 +105,30 @@ void GrahamScan::findStartPoint() {
     GrahamScan::startPoint = &points.at(0);
 }
 
-void GrahamScan::sortPolarAnglePoints() {
+void GrahamScan::sortPolarAnglePoints()
+{
     /** Sorting by polar angle, respect to `startPoint` or points[0] */
     qsort(&points[1], points.size() - 1, sizeof(Point),
-          [](const void *_a, const void *_b) -> int {
-              Point a = *((Point *) _a);
-              Point b = *((Point *) _b);
+        [](const void *_a, const void *_b) -> int {
+            Point a = *((Point *) _a);
+            Point b = *((Point *) _b);
 
-              std::cout << "start -> {" << a.x << "," << a.y << "} -> {" << b.x
-                        << "," << b.y << "}" << std::endl;
-              int o = Utils::orientation(*startPoint, a, b);
+            std::cout << "start -> {" << a.x << "," << a.y << "} -> {" << b.x
+                    << "," << b.y << "}" << std::endl;
+            int o = Utils::orientation(*startPoint, a, b);
 
-              /** Co-linear case */
-              if (o == 0) {
-                  std::cout << "Co-linear case..." << std::endl;
-                  /** Take the furthest distance first */
-                  return Utils::distanceNonSquared(*startPoint, b)
-                               >= Utils::distanceNonSquared(*startPoint, a)
-                            ? -1
-                            : 1;
-              }
+            /** Co-linear case */
+            if (o == 0) {
+                std::cout << "Co-linear case..." << std::endl;
+                /** Take the furthest distance first */
+                return Utils::distanceNonSquared(*startPoint, b) >= Utils::distanceNonSquared(*startPoint, a) ? -1 : 1;
+            }
 
-              if (o == 2) {
-                  std::cout << "Point{" << a.x << "," << a.y << "} comes first!"
-                            << std::endl;
-              }
+            if (o == 2) {
+                std::cout << "Point{" << a.x << "," << a.y << "} comes first!" << std::endl;
+            }
 
-              return o == 2 ? -1 : 1;
-          });
-
-    /** Optimize the sorted points */
-    // unsigned m = 1;
-    // for (unsigned i = 1; i < points.size(); ++i) {
-    //     while (i < points.size() - 1
-    //            && Utils::orientation(_startPoint, points[i], points[i + 1])
-    //                  == 0) {
-    //         ++i;
-    //     }
-
-    //     std::cout << "Swapping [" << m << "]{" << points[m].x << ", "
-    //               << points[m].y << "} with [" << i << "]{" << points[i].x
-    //               << ", " << points[i].y << "}" << std::endl;
-    //     std::swap(points[m++], points[i]);
-    // }
+            return o == 2 ? -1 : 1;
+        }
+    );
 }

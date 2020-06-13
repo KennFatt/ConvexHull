@@ -16,7 +16,7 @@ private:
      *
      * @see Renderer::points
      */
-    unsigned pointsSize;
+    const unsigned pointsSize;
 
     /**
      * Check whether the application is running still or
@@ -50,7 +50,12 @@ private:
     void setup();
 
     /**
-     * Start
+     * Call the program main loop to trigger the Renderer:render().
+     */
+    void tick();
+
+    /**
+     * The main function to draw all objects into the canvas.
      */
     void render();
 
@@ -76,12 +81,17 @@ public:
      * 1. Renderer::setup()
      * 2. Loop Renderer::render();
      */
-    Renderer(unsigned pointsSize = 5);
+    explicit Renderer(const unsigned pointsSize = 5);
 
     /**
      * Copy constructor is not allowed for this class.
      */
     Renderer(const Renderer&) = delete;
+
+    /**
+     * Delete most of garbage.
+     */
+    ~Renderer();
 };
 
 };    // namespace kf
