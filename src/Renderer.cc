@@ -36,13 +36,12 @@ void Renderer::setup() {
     /** SFML window setup */
     sf::ContextSettings settings;
 
-    /** Anti-aliasnig x8 */
+    /** Anti-aliasing x8 */
     settings.antialiasingLevel = 8;
 
     window.create(sf::VideoMode(512, 512),
                   "Convex Hull - Graham Scan algorithm",
                   sf::Style::Titlebar | sf::Style::Close, settings);
-
     window.setFramerateLimit(60);
     window.setKeyRepeatEnabled(false);
 
@@ -54,19 +53,9 @@ void Renderer::setup() {
     /** Generate random seed */
     srand(time(NULL));
 
-    /**
-     * Initialize the points.
-     *
-     * TODO: Move it inside algorithm things.
-     */
-    Utils::randomizePoints(points, pointsSize, window.getSize());
-
     /** Instantiate the algorithm */
-    std::cout << "Before: {" << points[0].x << ", " << points[0].y << "}"
-              << std::endl;
-    algorithm = new GrahamScan(points);
-    std::cout << "After: {" << points[0].x << ", " << points[0].y << "}"
-              << std::endl;
+    algorithm = new GrahamScan(points, pointsSize, window.getSize().x,
+                               window.getSize().y);
 }
 
 void Renderer::render() {
@@ -83,18 +72,33 @@ void Renderer::render() {
         window.draw(c);
 
         /** Index */
-        sf::Text t(std::to_string(i), font, 16);
+        // sf::Text t(std::to_string(i), font, 16);
+        sf::Text t(std::to_string(i) + " (" + std::to_string(p.x) + ", "
+                      + std::to_string(p.y) + ")",
+                   font, 16);
         t.setPosition((float) p.x, (float) p.y + 7.5f);
         window.draw(t);
 
         /** Lines */
         if (i != 0) {
             sf::Vertex lines[] = {
-               sf::Vertex(sf::Vector2f((float) algorithm->getStartPoint().x,
-                                       (float) algorithm->getStartPoint().y)),
+               sf::Vertex(sf::Vector2f(GrahamScan::startPoint->x,
+                                       GrahamScan::startPoint->y)),
                sf::Vertex(c.getPosition())};
             window.draw(lines, 2, sf::Lines);
         }
+    }
+
+    if (algorithm->getHull().size() >= 3) {
+        sf::ConvexShape convex(algorithm->getHull().size());
+        for (unsigned i = 0; i < algorithm->getHull().size(); ++i) {
+            convex.setPoint(i, sf::Vector2f(algorithm->getHull()[i].x,
+                                            algorithm->getHull()[i].y));
+        }
+        convex.setFillColor(sf::Color(0xD0, 0xFE, 0xFE, 0x55));
+        convex.setOutlineColor(sf::Color(0x01, 0x73, 0x74));
+        convex.setOutlineThickness(2.0f);
+        window.draw(convex);
     }
 }
 
@@ -126,8 +130,7 @@ void Renderer::onKeyPressed(sf::Keyboard::Key pressedKey) {
         case sf::Keyboard::Key::Escape: onClose(); break;
         case sf::Keyboard::Key::R: {
             std::cout << "Updating points..." << std::endl;
-            Utils::randomizePoints(points, pointsSize, window.getSize());
-            algorithm->updateStartPoint();
+            algorithm->refreshPoints();
         }; break;
         default: {
             std::cout << "KeyPressed: " << pressedKey << std::endl;

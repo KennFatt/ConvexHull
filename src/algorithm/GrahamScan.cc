@@ -1,23 +1,75 @@
 #include "GrahamScan.hpp"
 
 #include <cstdlib>    // qsort
+#include <iostream>
 #include <utility>    // std::swap
 
 #include "Utils.hpp"
 
 using namespace kf;
 
-// Global variable
-// TODO: Find the proper way to handle this hack,
-Point _startPoint(0, 0);
+// -------------------- INTERNAL --------------------
 
-GrahamScan::GrahamScan(std::vector<Point> &_points)
-    : points(_points)
-    , startPoint(findStartPoint()) {
-    sortPolarAnglePoitns();
+/** Re-define static field inside current source code */
+Point *GrahamScan::startPoint = nullptr;
+
+// --------------------- PUBLIC ---------------------
+
+GrahamScan::GrahamScan(std::vector<Point> &_points, unsigned _pointsSize,
+                       unsigned _canvasWidth, unsigned _canvasHeight)
+    : pointsSize(_pointsSize)
+    , points(_points)
+    , canvasWidth(_canvasWidth)
+    , canvasHeight(_canvasHeight) {
+    refreshPoints();
 }
 
-Point &GrahamScan::findStartPoint() {
+std::vector<Point> &GrahamScan::getPoints() {
+    return points;
+}
+
+std::vector<Point> &GrahamScan::getHull() {
+    return hull;
+}
+
+void GrahamScan::refreshPoints() {
+    /** Generate random points */
+    Utils::randomizePoints(points, pointsSize, canvasWidth, canvasHeight);
+
+    /** Find the starting point */
+    findStartPoint();
+
+    /** Sort points' based on polar angle that respect to starting point */
+    sortPolarAnglePoints();
+
+    /** Clear previous records */
+    if (!hull.empty()) {
+        hull.clear();
+    }
+
+    /** Measure the hull now */
+    hull.push_back(points[0]);
+    hull.push_back(points[1]);
+
+    for (unsigned i = 2; i < points.size(); ++i) {
+        while (Utils::orientation(hull[hull.size() - 2], hull[hull.size() - 1],
+                                  points[i])
+               != 2) {
+            hull.pop_back();
+        }
+
+        hull.push_back(points[i]);
+    }
+
+    std::cout << "Hull: " << std::endl;
+    for (auto &h : hull) {
+        std::cout << "- {" << h.x << ", " << h.y << "}" << std::endl;
+    }
+}
+
+// --------------------- PRIVATE ---------------------
+
+void GrahamScan::findStartPoint() {
     unsigned tmpIndex = 0;
     Point tmp = points.at(tmpIndex);
 
@@ -39,47 +91,53 @@ Point &GrahamScan::findStartPoint() {
         }
     }
 
-    /** In case the tmp were in correct place since then */
-    if (tmpIndex == 0) {
-        return points[0];
-    }
-
     /** Swap element at tmpIndex with element at 0 */
     std::swap(points[0], points[tmpIndex]);
 
-    /** HACK: Store the startPoint to internal global varible */
-    _startPoint = points.at(0);
-
-    return points[0];
+    GrahamScan::startPoint = &points.at(0);
 }
 
-void GrahamScan::sortPolarAnglePoitns() {
+void GrahamScan::sortPolarAnglePoints() {
     /** Sorting by polar angle, respect to `startPoint` or points[0] */
     qsort(&points[1], points.size() - 1, sizeof(Point),
           [](const void *_a, const void *_b) -> int {
               Point a = *((Point *) _a);
               Point b = *((Point *) _b);
 
-              int o = Utils::orientation(_startPoint, a, b);
+              std::cout << "start -> {" << a.x << "," << a.y << "} -> {" << b.x
+                        << "," << b.y << "}" << std::endl;
+              int o = Utils::orientation(*startPoint, a, b);
 
               /** Co-linear case */
               if (o == 0) {
+                  std::cout << "Co-linear case..." << std::endl;
                   /** Take the furthest distance first */
-                  return Utils::distanceNonSquared(_startPoint, b)
-                               >= Utils::distanceNonSquared(_startPoint, a)
+                  return Utils::distanceNonSquared(*startPoint, b)
+                               >= Utils::distanceNonSquared(*startPoint, a)
                             ? -1
                             : 1;
               }
 
+              if (o == 2) {
+                  std::cout << "Point{" << a.x << "," << a.y << "} comes first!"
+                            << std::endl;
+              }
+
               return o == 2 ? -1 : 1;
           });
-}
 
-Point &GrahamScan::getStartPoint() {
-    return startPoint;
-}
+    /** Optimize the sorted points */
+    // unsigned m = 1;
+    // for (unsigned i = 1; i < points.size(); ++i) {
+    //     while (i < points.size() - 1
+    //            && Utils::orientation(_startPoint, points[i], points[i + 1])
+    //                  == 0) {
+    //         ++i;
+    //     }
 
-void GrahamScan::updateStartPoint() {
-    startPoint = findStartPoint();
-    sortPolarAnglePoitns();
+    //     std::cout << "Swapping [" << m << "]{" << points[m].x << ", "
+    //               << points[m].y << "} with [" << i << "]{" << points[i].x
+    //               << ", " << points[i].y << "}" << std::endl;
+    //     std::swap(points[m++], points[i]);
+    // }
 }

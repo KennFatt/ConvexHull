@@ -1,15 +1,13 @@
 #ifndef __KF_POINT_H
 #define __KF_POINT_H
 
-#include <cstdint>
-
 namespace kf {
 
 struct Point {
-    int16_t x;
-    int16_t y;
+    int x;
+    int y;
 
-    Point(int16_t _x, int16_t _y)
+    Point(int _x, int _y)
         : x(_x)
         , y(_y) {}
 };

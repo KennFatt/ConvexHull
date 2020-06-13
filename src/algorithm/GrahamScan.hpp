@@ -1,7 +1,6 @@
 #ifndef __KF_GRAHAM_SCAN_H
 #define __KF_GRAHAM_SCAN_H
 
-#include <stack>
 #include <vector>
 
 #include "Point.hpp"
@@ -11,24 +10,36 @@ namespace kf {
 class GrahamScan {
 private:
     /**
+     * Initial size for GrahamScan::points.
+     */
+    unsigned pointsSize;
+
+    /**
      * All loaded points inside the canvas.
      */
     std::vector<Point> &points;
 
     /**
+     * This is optional, but if we implement with multimedia library like SDL or
+     * SFML, the value should be the width and height of the viewport.
+     */
+    unsigned canvasWidth;
+    unsigned canvasHeight;
+
+    /**
      * Stack of valid hull.
      */
-    std::stack<Point> hull;
+    std::vector<Point> hull;
 
     /**
      * Most bottom (and most left) point.
      */
-    Point &startPoint;
+    // Point *startPoint;
 
     /**
      * Find starting point.
      */
-    Point &findStartPoint();
+    void findStartPoint();
 
     /**
      * Sort all points based on their polar angle related to start point.
@@ -39,22 +50,41 @@ private:
      *
      * Sorting algorithm: quicksort O(N log N)
      */
-    void sortPolarAnglePoitns();
+    void sortPolarAnglePoints();
 
 public:
-    GrahamScan(std::vector<Point> &);
+    static Point *startPoint;
 
+    /**
+     * Constructor will call GrahamScan::refreshPoints() to organize the points.
+     */
+    GrahamScan(std::vector<Point> &_points, unsigned _pointsSize,
+               unsigned _canvasWidth = 0, unsigned _canvasHeight = 0);
     GrahamScan(const GrahamScan &) = delete;
 
     /**
-     * Get the start point.
+     * Get points reference.
      */
-    Point &getStartPoint();
+    std::vector<Point> &getPoints();
 
     /**
-     * Update its start point due the points also changed.
+     * Get final known hull.
      */
-    void updateStartPoint();
+    std::vector<Point> &getHull();
+
+    // /**
+    //  * Get the start point.
+    //  */
+    // Point *getStartPoint();
+
+    /**
+     * Re-organize the points.
+     *
+     * 1. Reset points
+     * 2. Find new starting point
+     * 3. Sort all points polar angle respect to known starting point
+     */
+    void refreshPoints();
 };
 
 };    // namespace kf
