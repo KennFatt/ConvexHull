@@ -10,6 +10,19 @@
 namespace kf {
 
 class Renderer {
+public:
+    /**
+     * Rendering flags to show specific object into the canvas.
+     */
+    typedef enum : unsigned {
+        RENDER_DEFAULT  = 0b0000,
+        RENDER_INDEXES  = 0b0001,
+        RENDER_COORDS   = 0b0010,
+        RENDER_LINES    = 0b0100,
+        RENDER_CONVEX   = 0b1000,
+    } RenderFlags;
+    unsigned enabledRenderFlags = RenderFlags::RENDER_DEFAULT;
+
 private:
     /**
      * Amount of points that will be rendered in the canvas.
@@ -74,6 +87,11 @@ private:
      * but it's still in the same main thread.
      */
     void handleEvent();
+
+    /**
+     * Check whether flags is enabled or not.
+     */
+    bool isFlagEnabled(RenderFlags);
 
 public:
     /**

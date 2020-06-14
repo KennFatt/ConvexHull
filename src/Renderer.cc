@@ -90,34 +90,44 @@ void Renderer::render()
         window.draw(c);
 
         /** Index indicator for each vertices */
-        sf::Text t(std::to_string(i), font, 16);
-        // sf::Text t(std::to_string(i) + " (" + std::to_string(p.x) + ", "
-        //               + std::to_string(p.y) + ")",
-        //            font, 16);
+        sf::Text t;
+        if (isFlagEnabled(RenderFlags::RENDER_INDEXES)) {
+            t.setString(t.getString() + std::to_string(i));
+        }
+    
+        if (isFlagEnabled(RenderFlags::RENDER_COORDS)) {
+            t.setString(t.getString() + std::to_string(i) + " (" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")");
+        }
+        t.setFont(font);
+        t.setCharacterSize(16);
         t.setPosition(sf::Vector2f(p.x, p.y + 8));
         window.draw(t);
 
         /** Lines from start point to each vertices */
-        if (i != 0) {
-            sf::Vertex line[] = {
-               sf::Vertex(sf::Vector2f(GrahamScan::getStartingPoint()->x, GrahamScan::getStartingPoint()->y)),
-               sf::Vertex(c.getPosition())
-            };
-            window.draw(line, 2, sf::Lines);
+        if (isFlagEnabled(RenderFlags::RENDER_LINES)) {
+            if (i != 0) {
+                sf::Vertex line[] = {
+                    sf::Vertex(sf::Vector2f(GrahamScan::getStartingPoint()->x, GrahamScan::getStartingPoint()->y)),
+                    sf::Vertex(c.getPosition())
+                };
+                window.draw(line, 2, sf::Lines);
+            }
         }
     }
 
     /** Show the final convex hull */
-    if (algorithm->getHull().size() >= 3) {
-        auto& hull = algorithm->getHull();
-        sf::ConvexShape convex(hull.size());
-        for (unsigned i = 0; i < hull.size(); ++i) {
-            convex.setPoint(i, sf::Vector2f(hull[i].x, hull[i].y));
+    if (isFlagEnabled(RenderFlags::RENDER_CONVEX)) {
+        if (algorithm->getHull().size() >= 3) {
+            auto& hull = algorithm->getHull();
+            sf::ConvexShape convex(hull.size());
+            for (unsigned i = 0; i < hull.size(); ++i) {
+                convex.setPoint(i, sf::Vector2f(hull[i].x, hull[i].y));
+            }
+            convex.setFillColor(sf::Color(0xD0, 0xFE, 0xFE, 0x55));
+            convex.setOutlineColor(sf::Color(0x01, 0x73, 0x74));
+            convex.setOutlineThickness(2.0f);
+            window.draw(convex);
         }
-        convex.setFillColor(sf::Color(0xD0, 0xFE, 0xFE, 0x55));
-        convex.setOutlineColor(sf::Color(0x01, 0x73, 0x74));
-        convex.setOutlineThickness(2.0f);
-        window.draw(convex);
     }
 }
 
@@ -154,8 +164,29 @@ void Renderer::onKeyPressed(sf::Keyboard::Key pressedKey)
             algorithm->refreshPoints();
         }; break;
 
+        case sf::Keyboard::Key::Num1:
+            enabledRenderFlags ^= 1 << RenderFlags::RENDER_INDEXES;
+            break;
+        
+        case sf::Keyboard::Key::Num2:
+            enabledRenderFlags ^= 1 << RenderFlags::RENDER_COORDS;
+            break;
+        
+        case sf::Keyboard::Key::Num3:
+            enabledRenderFlags ^= 1 << RenderFlags::RENDER_LINES;
+            break;
+
+        case sf::Keyboard::Key::Num4:
+            enabledRenderFlags ^= 1 << RenderFlags::RENDER_CONVEX;
+            break;
+
         default: {
             std::cout << "KeyPressed: " << pressedKey << std::endl;
         }; break;
     }
+}
+
+bool Renderer::isFlagEnabled(RenderFlags flag) {
+    /** This is better than before, thanks StackOverflow */
+    return (enabledRenderFlags >> flag) & 1;
 }
